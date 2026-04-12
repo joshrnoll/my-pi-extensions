@@ -1,0 +1,10 @@
+{
+  "allow": [
+    "kubectl get *",
+    "git status"
+  ],
+  "deny": [
+    "rm -rf *",
+    "kubectl delete *"
+  ]
+}

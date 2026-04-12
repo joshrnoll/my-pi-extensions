@@ -1,0 +1,22 @@
+{
+  "name": "pi-bash-policy-extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test test/**/*.test.ts",
+    "check": "npm test"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "dependencies": {
+    "minimatch": "^10.0.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
