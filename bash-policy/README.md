@@ -2,6 +2,10 @@
 
 A Pi extension that enforces allow/deny policy checks for agent `bash` tool calls.
 
+## Compatibility
+
+Requires **pi >= 0.18.0**, the first release that included `ctx.ui.confirm()`.
+
 ## Behavior
 
 The extension evaluates the trimmed full bash command string before execution.
@@ -57,14 +61,12 @@ On session start or reload, the extension sends one of these notifications:
 For unmatched commands in interactive mode, the extension prompts with:
 
 ```text
-Pi wants to run this command:
+Command requires approval:
 
 <command>
-
-Allow [] Deny [*]
 ```
 
-The dialog uses `ctx.ui.select()` and treats anything other than `Allow` as denial.
+The extension uses `ctx.ui.confirm()`. Anything other than explicit approval is treated as denial.
 
 ## Install
 
