@@ -1,0 +1,2 @@
+set -g window-status-format '#{?@pi_attention_state,#{?#{==:#{@pi_attention_state},input},#[fg=red],#{?#{==:#{@pi_attention_state},done},#[fg=yellow],}},}#I:#W#F#[default]'
+set -g window-status-current-format '#{?@pi_attention_state,#{?#{==:#{@pi_attention_state},input},#[fg=red],#{?#{==:#{@pi_attention_state},done},#[fg=yellow],}},}#I:#W#F#[default]'

@@ -1,0 +1,23 @@
+{
+  "name": "pi-nvim-view",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "keywords": ["pi-package"],
+  "scripts": {
+    "test": "node --import tsx --test test/**/*.test.ts",
+    "check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-ai": "*",
+    "@mariozechner/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3"
+  },
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  }
+}
