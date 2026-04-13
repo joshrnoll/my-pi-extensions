@@ -1,10 +1,15 @@
-import { approvalPrompt, NON_INTERACTIVE_APPROVAL_MESSAGE, USER_DENIED_MESSAGE } from "./messages.js";
+import {
+  approvalBody,
+  approvalTitle,
+  NON_INTERACTIVE_APPROVAL_MESSAGE,
+  USER_DENIED_MESSAGE,
+} from "./messages.js";
 import type { BashPolicyState } from "./config.js";
 import { loadConfig } from "./config.js";
 import { evaluatePolicy } from "./policy.js";
 
 export interface ApprovalUI {
-  select(title: string, options: string[]): Promise<string | undefined>;
+  confirm(title: string, message: string): Promise<boolean>;
 }
 
 export interface ToolCallContextLike {
@@ -40,8 +45,8 @@ export async function handleBashCommand(
     return { block: true, reason: NON_INTERACTIVE_APPROVAL_MESSAGE };
   }
 
-  const choice = await ctx.ui.select(approvalPrompt(decision.command), ["Deny", "Allow"]);
-  if (choice !== "Allow") {
+  const allowed = await ctx.ui.confirm(approvalTitle(), approvalBody(decision.command));
+  if (!allowed) {
     return { block: true, reason: USER_DENIED_MESSAGE };
   }
 

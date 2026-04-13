@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import extension from "../src/index.ts";
 import { handleBashCommand } from "../src/runtime.ts";
-import { approvalPrompt } from "../src/messages.ts";
+import { approvalBody, approvalTitle } from "../src/messages.ts";
 
 function createMockPi() {
   const handlers = new Map<string, Function[]>();
@@ -29,8 +29,10 @@ function createMockPi() {
 async function makeProject() {
   const root = await mkdtemp(join(tmpdir(), "bash-policy-integration-"));
   const cwd = join(root, "project");
+  const home = join(root, "home");
   await mkdir(cwd, { recursive: true });
-  return { cwd };
+  await mkdir(home, { recursive: true });
+  return { cwd, home };
 }
 
 test("handleBashCommand blocks approval-required commands without UI", async () => {
@@ -43,7 +45,7 @@ test("handleBashCommand blocks approval-required commands without UI", async () 
     },
     {
       hasUI: false,
-      ui: { select: async () => "Allow" },
+      ui: { confirm: async () => true },
     },
   );
 
@@ -53,9 +55,9 @@ test("handleBashCommand blocks approval-required commands without UI", async () 
   });
 });
 
-test("handleBashCommand uses the documented approval prompt and blocks non-Allow responses", async () => {
+test("handleBashCommand uses confirm for approval-required commands", async () => {
   let seenTitle = "";
-  let seenOptions: string[] = [];
+  let seenMessage = "";
 
   const result = await handleBashCommand(
     "git status",
@@ -67,43 +69,56 @@ test("handleBashCommand uses the documented approval prompt and blocks non-Allow
     {
       hasUI: true,
       ui: {
-        select: async (title, options) => {
+        confirm: async (title, message) => {
           seenTitle = title;
-          seenOptions = options;
-          return undefined;
+          seenMessage = message;
+          return false;
         },
       },
     },
   );
 
-  assert.equal(seenTitle, approvalPrompt("git status"));
-  assert.deepEqual(seenOptions, ["Deny", "Allow"]);
+  assert.equal(seenTitle, approvalTitle());
+  assert.equal(seenMessage, approvalBody("git status"));
+  assert.equal(approvalTitle(), "Command requires approval:");
+  assert.equal(approvalBody("git status"), "\ngit status\n");
   assert.deepEqual(result, { block: true, reason: "Blocked by user" });
 });
 
 test("extension notifies on session start and ignores non-bash tool calls", async () => {
-  const { cwd } = await makeProject();
-  const pi = createMockPi();
-  extension(pi as never);
+  const { cwd, home } = await makeProject();
+  const previousHome = process.env.HOME;
+  process.env.HOME = home;
 
-  const notifications: Array<{ message: string; severity?: string }> = [];
-  const ctx = {
-    cwd,
-    hasUI: true,
-    ui: {
-      notify(message: string, severity?: string) {
-        notifications.push({ message, severity });
+  try {
+    const pi = createMockPi();
+    extension(pi as never);
+
+    const notifications: Array<{ message: string; severity?: string }> = [];
+    const ctx = {
+      cwd,
+      hasUI: true,
+      ui: {
+        notify(message: string, severity?: string) {
+          notifications.push({ message, severity });
+        },
+        confirm: async () => true,
       },
-      select: async () => "Allow",
-    },
-  };
+    };
 
-  await pi.emit("session_start", { reason: "startup" }, ctx);
-  const toolResult = await pi.emit("tool_call", { toolName: "read", input: { path: "x" } }, ctx);
+    await pi.emit("session_start", { reason: "startup" }, ctx);
+    const toolResult = await pi.emit("tool_call", { toolName: "read", input: { path: "x" } }, ctx);
 
-  assert.equal(notifications.length, 1);
-  assert.equal(notifications[0]?.severity, "warning");
-  assert.equal(toolResult, undefined);
+    assert.equal(notifications.length, 1);
+    assert.equal(notifications[0]?.severity, "warning");
+    assert.equal(toolResult, undefined);
+  } finally {
+    if (previousHome === undefined) {
+      delete process.env.HOME;
+    } else {
+      process.env.HOME = previousHome;
+    }
+  }
 });
 
 test("extension enforces deny policy after loading config", async () => {
@@ -123,7 +138,7 @@ test("extension enforces deny policy after loading config", async () => {
       notify(message: string, severity?: string) {
         notifications.push({ message, severity });
       },
-      select: async () => "Allow",
+      confirm: async () => true,
     },
   };
 
