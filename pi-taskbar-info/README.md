@@ -22,12 +22,12 @@ pi install /Users/josh/repos/my-pi-extensions/.worktrees/pi-taskbar-info/pi-task
 
 This extension replaces Pi's built-in footer with a custom one that:
 
-- keeps the existing token, cache, cost, and model stats
-- shows the working directory and git branch on the first line
-- appends the active k8s context using `kubectl config current-context`
-- shows a block-bar visualization for context usage instead of the numeric percentage
+- shows the working directory with a file icon on the first line
+- appends the active k8s context with a k8s icon using `kubectl config current-context`
+- shows only a block-bar visualization plus total context percentage for context-window usage on the stats line
+- keeps the model/provider info on the right when space allows
 
-If `kubectl` is unavailable or no current context is configured, the footer shows `k8s:none`.
+If `kubectl` is unavailable or no current context is configured, the footer shows `☸ none`.
 
 ## Notes
 

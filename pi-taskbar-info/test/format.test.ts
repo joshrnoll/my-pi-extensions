@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildLocationLine, formatTokens, formatUsageBar, replaceHomeDir, sanitizeStatusText } from "../src/format.js";
+import { buildLocationLine, formatContextPercent, formatTokens, formatUsageBar, replaceHomeDir, sanitizeStatusText } from "../src/format.js";
 
 describe("formatUsageBar", () => {
   it("renders a filled bar from a percent", () => {
@@ -9,6 +9,13 @@ describe("formatUsageBar", () => {
 
   it("renders unknown usage", () => {
     expect(formatUsageBar(null, 5)).toBe("▕?????▏");
+  });
+});
+
+describe("formatContextPercent", () => {
+  it("formats context usage as a whole percentage", () => {
+    expect(formatContextPercent(62.4)).toBe("62%");
+    expect(formatContextPercent(null)).toBe("?%");
   });
 });
 
@@ -32,7 +39,7 @@ describe("path helpers", () => {
         gitBranch: "main",
         sessionName: "demo",
       }),
-    ).toContain("~/repos/my-pi-extensions (main) • demo • k8s:dev-cluster");
+    ).toContain("📁 ~/repos/my-pi-extensions (main) | demo | ☸ dev-cluster");
   });
 });
 

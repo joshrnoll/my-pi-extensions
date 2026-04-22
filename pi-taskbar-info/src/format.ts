@@ -1,5 +1,8 @@
 import { truncateToWidth } from "@mariozechner/pi-tui";
 
+const DIRECTORY_ICON = "📁";
+const K8S_ICON = "☸";
+
 export function sanitizeStatusText(text: string): string {
   return text
     .replace(/[\r\n\t]/g, " ")
@@ -30,6 +33,14 @@ export function formatUsageBar(percent: number | null, width = 12): string {
   return `▕${"█".repeat(filled)}${"░".repeat(width - filled)}▏`;
 }
 
+export function formatContextPercent(percent: number | null): string {
+  if (percent === null || Number.isNaN(percent)) {
+    return "?%";
+  }
+
+  return `${Math.round(Math.max(0, Math.min(100, percent)))}%`;
+}
+
 export function buildLocationLine(
   cwd: string,
   k8sContext: string,
@@ -46,9 +57,13 @@ export function buildLocationLine(
     pwd = `${pwd} (${options.gitBranch})`;
   }
 
+  const parts = [`${DIRECTORY_ICON} ${pwd}`];
+
   if (options.sessionName) {
-    pwd = `${pwd} • ${options.sessionName}`;
+    parts.push(options.sessionName);
   }
 
-  return truncateToWidth(`${pwd} • k8s:${k8sContext}`, width, "...");
+  parts.push(`${K8S_ICON} ${k8sContext}`);
+
+  return truncateToWidth(parts.join(" | "), width, "...");
 }

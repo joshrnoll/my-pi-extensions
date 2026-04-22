@@ -1,4 +1,3 @@
-import type { AssistantMessage } from "@mariozechner/pi-ai";
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth, type Component, type TUI } from "@mariozechner/pi-tui";
 
@@ -13,7 +12,7 @@ interface FooterDataProvider {
   onBranchChange(listener: () => void): () => void;
 }
 
-import { buildLocationLine, formatTokens, formatUsageBar, sanitizeStatusText } from "./format.js";
+import { buildLocationLine, formatContextPercent, formatUsageBar, sanitizeStatusText } from "./format.js";
 
 const REFRESH_MS = 5000;
 
@@ -75,31 +74,10 @@ export function createTaskbarFooter(
     },
     invalidate() {},
     render(width: number): string[] {
-      let totalInput = 0;
-      let totalOutput = 0;
-      let totalCacheRead = 0;
-      let totalCacheWrite = 0;
-      let totalCost = 0;
-
-      for (const entry of ctx.sessionManager.getEntries()) {
-        if (entry.type === "message" && entry.message.role === "assistant") {
-          const message = entry.message as AssistantMessage;
-          totalInput += message.usage.input;
-          totalOutput += message.usage.output;
-          totalCacheRead += message.usage.cacheRead;
-          totalCacheWrite += message.usage.cacheWrite;
-          totalCost += message.usage.cost.total;
-        }
-      }
-
       const contextUsage = ctx.getContextUsage();
-      const contextWindow = contextUsage?.contextWindow ?? ctx.model?.contextWindow ?? 0;
       const contextPercentValue = contextUsage?.percent ?? null;
-      const contextTokens = contextUsage?.tokens ?? null;
       const usageBar = formatUsageBar(contextPercentValue);
-      const usageText =
-        contextTokens === null ? `?/${formatTokens(contextWindow)}` : `${formatTokens(contextTokens)}/${formatTokens(contextWindow)}`;
-      const contextDisplay = `${usageBar} ${usageText}`;
+      const contextDisplay = `${usageBar} ${formatContextPercent(contextPercentValue)}`;
 
       let coloredContextDisplay = contextDisplay;
       if (contextPercentValue !== null && contextPercentValue > 90) {
@@ -108,19 +86,7 @@ export function createTaskbarFooter(
         coloredContextDisplay = theme.fg("warning", contextDisplay);
       }
 
-      const statsParts: string[] = [];
-      if (totalInput) statsParts.push(`↑${formatTokens(totalInput)}`);
-      if (totalOutput) statsParts.push(`↓${formatTokens(totalOutput)}`);
-      if (totalCacheRead) statsParts.push(`R${formatTokens(totalCacheRead)}`);
-      if (totalCacheWrite) statsParts.push(`W${formatTokens(totalCacheWrite)}`);
-
-      const usingSubscription = ctx.model ? ctx.modelRegistry.isUsingOAuth(ctx.model) : false;
-      if (totalCost || usingSubscription) {
-        statsParts.push(`$${totalCost.toFixed(3)}${usingSubscription ? " (sub)" : ""}`);
-      }
-      statsParts.push(coloredContextDisplay);
-
-      let statsLeft = statsParts.join(" ");
+      let statsLeft = coloredContextDisplay;
       let statsLeftWidth = visibleWidth(statsLeft);
       if (statsLeftWidth > width) {
         statsLeft = truncateToWidth(statsLeft, width, "...");
