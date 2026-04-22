@@ -80,9 +80,9 @@ export function createTaskbarFooter(
       const contextDisplay = `${usageBar} ${formatContextPercent(contextPercentValue)}`;
 
       let coloredContextDisplay = contextDisplay;
-      if (contextPercentValue !== null && contextPercentValue > 90) {
+      if (contextPercentValue !== null && contextPercentValue > 50) {
         coloredContextDisplay = theme.fg("error", contextDisplay);
-      } else if (contextPercentValue !== null && contextPercentValue > 70) {
+      } else if (contextPercentValue !== null && contextPercentValue > 35) {
         coloredContextDisplay = theme.fg("warning", contextDisplay);
       }
 
