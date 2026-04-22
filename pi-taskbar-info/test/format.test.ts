@@ -39,7 +39,7 @@ describe("path helpers", () => {
         gitBranch: "main",
         sessionName: "demo",
       }),
-    ).toContain("📁 ~/repos/my-pi-extensions (main) | demo | ☸ dev-cluster");
+    ).toContain("📁 ~/repos/my-pi-extensions (main) | demo | ☸️ dev-cluster");
   });
 });
 

@@ -1,7 +1,7 @@
 import { truncateToWidth } from "@mariozechner/pi-tui";
 
 const DIRECTORY_ICON = "📁";
-const K8S_ICON = "☸";
+const K8S_ICON = "☸️";
 
 export function sanitizeStatusText(text: string): string {
   return text
