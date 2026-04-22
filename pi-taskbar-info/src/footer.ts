@@ -119,7 +119,7 @@ export function createTaskbarFooter(
       const statsRemainder = statsLine.slice(statsLeft.length);
       const dimStatsRemainder = theme.fg("dim", statsRemainder);
 
-      const lines = [theme.fg("dim", locationLine), dimStatsLeft + dimStatsRemainder];
+      const lines = [theme.fg("dim", locationLine), "", dimStatsLeft + dimStatsRemainder];
       const extensionStatuses = footerData.getExtensionStatuses();
       if (extensionStatuses.size > 0) {
         const statusEntries = Array.from(extensionStatuses.entries()) as Array<[string, string]>;
